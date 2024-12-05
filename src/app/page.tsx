@@ -1,101 +1,123 @@
-import Image from "next/image";
+// "use client";
+// import { useState } from "react";
+// import SearchBar from "./components/SearchBar";
+// import Dropdown from "./components/Dropdown";
+// import { dummyData } from "./data/dummyData";
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+// export default function Home() {
+//     const [searchQuery, setSearchQuery] = useState("");
+//     const [dropdownVisible, setDropdownVisible] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+//     // Filtered results based on search query
+//     const filteredManagers = dummyData.managers.filter((item) =>
+//         item.toLowerCase().includes(searchQuery.toLowerCase())
+//     );
+//     const filteredInvestments = dummyData.investments.filter((item) =>
+//         item.toLowerCase().includes(searchQuery.toLowerCase())
+//     );
+
+//     // Handle input change
+//     const handleInputChange = (e) => {
+//         setSearchQuery(e.target.value);
+//         setDropdownVisible(e.target.value.length > 0); // Show dropdown if there's input
+//     };
+
+//     return (
+//         <div className="bg-gray-100">
+//             <div className="flex flex-col h-screen md:min-w-max">
+//                 <div className="flex-1 p-3 sm:p-8 md:mt-14">
+//                     <div className="flex flex-col w-full sm:max-w-xl h-full mx-auto">
+//                         <h1 className="mt-22 mb-4 text-[28px] font-medium leading-[45px] text-[#21385F] sm:mt-32 sm:text-5xl">
+//                             Search 13F Filings
+//                         </h1>
+//                         <div className="relative mb-12">
+//                             {/* SearchBar Component */}
+//                             <SearchBar
+//                                 searchQuery={searchQuery}
+//                                 handleInputChange={handleInputChange}
+//                             />
+//                             {/* Dropdown Component */}
+//                             {dropdownVisible && (
+//                                 <Dropdown
+//                                     filteredManagers={filteredManagers}
+//                                     filteredInvestments={filteredInvestments}
+//                                 />
+//                             )}
+//                         </div>
+//                     </div>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// }
+
+'use client'
+
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import SearchBar from "./components/SearchBar";
+import Dropdown from "./components/Dropdown";
+
+const Home = () => {
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filteredManagers, setFilteredManagers] = useState([]);
+    const [filingsByManager, setFilingsByManager] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    const fetchFilings = async (filerName) => {
+        try {
+            setLoading(true);
+            setError("");
+            const response = await axios.get(`http://127.0.0.1:8000/filings/${filerName}`);
+            const filings = response.data;
+
+            // Group filings by filer_name (manager name)
+            const groupedFilings = filings.reduce((acc, filing) => {
+                const { filer_name } = filing;
+                if (!acc[filer_name]) acc[filer_name] = [];
+                acc[filer_name].push(filing);
+                return acc;
+            }, {});
+
+            // Update state with filtered managers and filings
+            setFilteredManagers(Object.keys(groupedFilings));
+            setFilingsByManager(groupedFilings);
+        } catch (err) {
+            setError(err.response?.data?.detail || "Error fetching data");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Handle search input change
+    const handleInputChange = (e) => {
+        const query = e.target.value;
+        setSearchQuery(query);
+
+        if (query.length > 0) {
+            fetchFilings(query);
+        } else {
+            setFilteredManagers([]);
+            setFilingsByManager({});
+        }
+    };
+
+    return (
+        <div className="bg-gray-100 h-screen">
+            <div className="flex flex-col items-center justify-center">
+                <h1 className="text-3xl font-bold mb-6">Search Filings by Manager</h1>
+                <SearchBar searchQuery={searchQuery} handleInputChange={handleInputChange} />
+                <div className="relative w-full max-w-xl mt-4">
+                    {loading && <p>Loading...</p>}
+                    {error && <p className="text-red-500">{error}</p>}
+                    {!loading && !error && (
+                        <Dropdown filteredManagers={filteredManagers} filings={filingsByManager} />
+                    )}
+                </div>
+            </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
-}
+    );
+};
+
+export default Home;
