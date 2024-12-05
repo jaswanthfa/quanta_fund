@@ -1,0 +1,6 @@
+import os
+from sec_api import QueryApi
+
+# Set API key in .env or export in terminal
+API_KEY = os.getenv('SEC_API_KEY', 'your_default_key')
+queryApi = QueryApi(api_key=API_KEY)
