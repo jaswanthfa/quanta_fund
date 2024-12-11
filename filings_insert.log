@@ -1,0 +1,11 @@
+2024-12-05 16:25:11,636 - INFO - Database connection established.
+2024-12-05 16:25:11,636 - ERROR - Error inserting filing data: 'NoneType' object is not iterable
+2024-12-05 16:25:18,191 - INFO - Database connection established.
+2024-12-05 16:25:18,191 - ERROR - Error inserting filing data: 'NoneType' object is not iterable
+2024-12-05 16:25:21,406 - INFO - Database connection established.
+2024-12-05 16:25:21,406 - ERROR - Error inserting filing data: 'NoneType' object is not iterable
+2024-12-05 16:53:07,150 - ERROR - Error in storing filings from date: Object of type datetime is not JSON serializable
+2024-12-05 16:56:40,981 - DEBUG - Starting new HTTPS connection (1): api.sec-api.io:443
+2024-12-05 16:56:41,947 - DEBUG - https://api.sec-api.io:443 "POST /?token=a5b85fb6bed33a7a1ec24fe6f17b982c51a382807a4fd797da380a3f1ea7f321 HTTP/11" 200 79
+2024-12-05 16:59:53,056 - DEBUG - Starting new HTTPS connection (1): api.sec-api.io:443
+2024-12-05 16:59:54,303 - DEBUG - https://api.sec-api.io:443 "POST /?token=a5b85fb6bed33a7a1ec24fe6f17b982c51a382807a4fd797da380a3f1ea7f321 HTTP/11" 200 79
